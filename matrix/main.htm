@@ -1,0 +1,546 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Matrix</title>
+<link rel="stylesheet" href="main.css">
+<script src = "easeljs-0.7.1.min.js"></script>
+<script src = "jQuery.js"></script>
+<script src = "tweenjs-0.5.1.min.js"></script>
+<script>
+function init()
+{	
+	var image = [];
+	image[0] = new Image();
+	image[0].src = "tileType4.png";
+	image[1] = new Image();
+	image[1].src = "tileType5.png";
+	image[2] = new Image();
+	image[2].src = "tileType2.png";
+	image[3] = new Image();
+	image[3].src = "tileType3.png";
+	image[4] = new Image();
+	image[4].src = "tileType2.png";
+	image[5] = new Image();
+	image[5].src = "tile1_.png";
+	var mainImage = [];
+	mainImage[0] = new Image();
+	mainImage[0].src = "back3.jpg";
+	
+	var backCanvas = document.getElementById("backCanvas");
+	var ctxBack = backCanvas.getContext('2d');
+	backCanvas.width = $(window).width();
+	backCanvas.height = $(window).height();
+	backCanvas.style.marginLeft = "-8px";
+	backCanvas.style.marginTop = "-2px";
+	
+	var badValue = -23;
+	/*
+	var mainCanvas = document.getElementById("mainCanvas");
+	var ctxMain = backCanvas.getContext('2d');
+	mainCanvas.width = $(window).width();
+	mainCanvas.height = $(window).height();
+	mainCanvas.style.marginLeft = "-8px";
+	mainCanvas.style.marginTop = "-2px";
+	*/
+	var stage = new createjs.Stage("backCanvas");
+	stage.enableMouseOver(30);
+	
+	var stageMain = new createjs.Stage("mainCanvas");
+	stageMain.enableMouseOver(30);
+	
+	numTilesType_2 = 5;
+	
+	var tile1 = [];
+	var tile2 = [];
+	var tile2Copy = [];
+	var tile2x = [];
+	var tile2y = [];
+	var tile3 = [];
+	var tile4 = [];
+	var tile4Cover = [];
+	var tile3FinalPosX = [-1, 0, 1, 0, -1, -1, 1, 1];
+	var tile3FinalPosY = [0, -1, 0, 1, 1, -1, -1, 1];
+	
+	var childCount = [1,2,3,4,5];
+	
+	var Grayscale = new createjs.ColorMatrixFilter([
+        0.39, 0.77, 0.19, 0, 0, // red component
+    0.35, 0.68, 0.17, 0, 0, // green component
+    0.27, 0.53, 0.13, 0, 0, // blue component
+    0, 0, 0, 1, 0  // alpha
+]);
+
+	for(var i = 0; i < $(window).width() / 100; ++i)
+	{
+		tile4[i] = [];
+		tile4Cover[i] = [];
+	}
+	
+	for(var i = 0; i < numTilesType_2; ++i)
+	{
+		tile3[i] = [];
+	}
+	
+	var mainImg = new createjs.Bitmap();
+	mainImg.image = mainImage[0];
+	
+	function myAnimate2(toX, toY, shape, checkAlpha, id , i, j)
+	{
+		createjs.Ticker.addEventListener("tick", tick);
+		createjs.Ticker.setInterval(25);
+		createjs.Ticker.setFPS(40);
+									
+		function tick() 
+		{
+			createjs.Tween.get(shape)
+						  .wait(10)
+						  .to({x:toX, y:toY, rotation:(((i + j)%2 == 0)?-1:1) * 360},4000, createjs.Ease.quintOut)
+						  .call(handleComplete);
+							function handleComplete()
+							{
+								shape.x = toX;
+								shape.y = toY;
+								createjs.Ticker.removeEventListener("tick", tick);
+								stage.update();
+							};
+			stage.update();
+		 }
+	}
+	
+	
+	
+	function myAnimate(toX, toY, shape, checkAlpha, id )
+	{
+		createjs.Ticker.addEventListener("tick", tick);
+		createjs.Ticker.setInterval(25);
+		createjs.Ticker.setFPS(40);
+									
+		function tick() 
+		{
+			createjs.Tween.get(shape)
+					.to({x:toX, y:toY, rotation:(checkAlpha == 1)?0:((checkAlpha == 2 || checkAlpha == 2.5)?0:0)},600 - checkAlpha * 200, 
+					(checkAlpha == 1)?createjs.Ease.quintOut:((checkAlpha == 2 || checkAlpha == 2.5)?createjs.Ease.linear:createjs.Ease.bounceOut))
+					.call(handleComplete);
+			function handleComplete()
+			{
+				shape.x = toX;
+				shape.y = toY;
+				createjs.Ticker.removeEventListener("tick", tick);
+				if(checkAlpha == 1)
+				{
+					shape.x = tile2[id].drawX;
+					shape.y = tile2[id].drawY;
+					shape.alpha = 0;
+				}
+				if(checkAlpha == 2 && tile1[id] != undefined)
+				{
+					tile1[id].shape.image = "";
+				}
+				stage.update();
+			};
+			
+			stage.update(); 
+		}
+	}
+	
+	function tileType_3(parent, id, stage_i, drawX, drawY, width, height)
+	{
+		this.parent = parent;
+		this.id = id;
+		this.stage = stage_i;
+		this.drawX = drawX;
+		this.drawY = drawY;
+		this.width = width;
+		this.height = height;
+		this.image1 = image[this.id%5];
+		this.image2 = image[(this.id + 1)%5];
+		var x = new createjs.Bitmap();
+		var yq = new createjs.Shape();
+		var zq = new createjs.Bitmap();
+		x.image = this.image1;
+		x.x = this.drawX;
+		x.y = this.drawY;
+		x.alpha = 0;
+		// NEED SOME WORK HERE
+		yq.graphics.beginFill("#bb0000")
+				   .drawRoundRect(this.drawX + tile3FinalPosX[id] * 100, this.drawY + tile3FinalPosY[id] * 100 , 100, 100, 15)
+				   .draw(ctxBack);
+		yq.alpha = 0;
+		stage.addChild(yq);
+		zq.image = this.image1;
+		zq.x = this.drawX + tile3FinalPosX[id] * 100;
+		zq.y = this.drawY + tile3FinalPosY[id] * 100 - 100;
+		zq.alpha = 0;
+		zq.draw(ctxBack);
+		stage.addChild(zq);
+		this.shape = x;
+		this.background = yq;
+		this.plainTile = zq;
+		var stagex = this.stage;
+		x.draw(ctxBack);
+		
+		this.shape.addEventListener("mouseover",
+									 function () 
+									 {	
+										 x.cursor = "pointer";
+										 x.x = x.x + 5;
+										 x.y = x.y + 5;
+										
+										 x.scaleX = 0.9;
+										 x.scaleY = 0.9;
+										 zq.alpha = 1;
+										 yq.alpha = 1;
+										 
+										 stage.update();				 
+									 });
+		
+		this.shape.addEventListener("click",
+							 function () 
+							 {	
+							 	for(var i = 0; i < mainImg.image.height / 100; ++i)
+								{
+									for(var j = 0; j < mainImg.image.width / 100; ++j)
+									{
+										tile4Cover[i][j] = new createjs.Shape();
+										tile4[i][j] = new createjs.Bitmap();
+										tile4[i][j].image = mainImage[0];
+										tile4[i][j].sourceRect = new createjs.Rectangle(j*100,i*100, 100, 100);
+										tile4Cover[i][j].x = 900;
+										tile4Cover[i][j].y = 300;
+										tile4Cover[i][j].width =  tile4[i][j].image.width / 2;
+										tile4Cover[i][j].height = tile4[i][j].image.height / 2;
+										tile4[i][j].x = 900;
+										tile4[i][j].y = 300;
+										//tile4Cover[i][j].regX = tile4[i][j].image.width / 2;
+										//tile4Cover[i][j].regY = tile4[i][j].image.height / 2;
+										//tile4[i][j].regX = tile4[i][j].image.width / 2;
+										//tile4[i][j].regY = tile4[i][j].image.height / 2;
+										tile4[i][j].draw(ctxBack);
+										//tile4Cover[i][j].graphics.beginFill("#000000").draw(ctxBack);
+										stage.addChild(tile4[i][j]);
+										//stage.addChild(tile4Cover[i][j]);
+										stage.update();
+										myAnimate2(j*100, i*100,tile4[i][j], 0, i ,j);
+										// myAnimate2(j*100, i*100,tile4Cover[i][j], 0, i + 1 ,j);										 
+									}
+								}		 
+							 });
+							 
+	
+		this.shape.addEventListener("mouseout",
+									 function () 
+									 {	
+										 x.cursor = "pointer";
+										 x.x = x.x - 5;
+										 x.y -= 5;
+										 x.scaleX = 1;
+										 x.scaleY = 1;
+										 zq.alpha = 0;
+										 yq.alpha = 0;
+										 
+										 stage.update();				 
+									 });
+		
+		this.stage.addChild(this.shape);
+     	this.stage.update();	
+	}
+	
+	function tileType_2(id, stage_i, drawX, drawY, width, height, numChild, futureOfChildY)
+	{
+		this.id = id;
+		this.drawX = drawX;
+		this.drawY = drawY;
+		this.width = width;
+		this.height = height;
+		this.stage = stage_i;
+		this.numChildTiles = numChild;
+		this.futureOfChildY = futureOfChildY;		
+		this.image1 = image[this.id];
+		this.image2 = image[(this.id + 1)%5];
+		this.image3 = image[(this.id + 2)%5];
+		var image1 = this.image1;
+		var image2 = this.image2
+		var image3 = this.image3
+		var x = new createjs.Bitmap();
+		x.image = image1;
+		x.x = this.drawX;
+		x.y = this.drawY;
+		this.shape = x;
+		var stagex = this.stage;
+		x.draw(ctxBack);
+		//x.alpha = 0.5;
+		var check = 0;
+		var inCrossStage = 0;
+		this.shape.addEventListener("mouseover",
+									 function () 
+									 {	
+										 x.cursor = "pointer";
+										 // x.alpha = 0.5;
+										 if(inCrossStage == 0)
+											x.image = image2;
+										 else
+											x.image = image3;	
+										 
+										 for(var k = 0; k < numTilesType_2; ++k)
+										 {
+											 if(k != id && tile2[k] != undefined && inCrossStage == 0)
+												tile2[k].shape.alpha = 0.5;
+											 stagex.update();
+										 }
+																	 
+									});
+		 this.shape.addEventListener("click",
+							 function () 
+							 {	
+							 	var xCoord;
+								var yCoord;
+								var reqId;
+							 	if(inCrossStage == 0)
+								{
+									for(var k = 0; k < numChild; ++k)
+									{	
+										tile3[id][k].drawX = tile2[id].drawX + 100 * tile3FinalPosX[k];
+										tile3[id][k].drawY = tile2[id].drawY + 100 * tile3FinalPosY[k];
+										xCoord = (tile3[id][k].drawX - 1) / 100;
+										yCoord = (tile3[id][k].drawY - 1) / 100;
+										reqId = xCoord * Math.ceil(( $(window).height() / 100 )) + yCoord;
+										tile3[id][k].shape.alpha = 1;
+										myAnimate(tile2[id].drawX + 100 * tile3FinalPosX[k], 
+												  tile2[id].drawY + 100 * tile3FinalPosY[k],
+												  tile3[id][k].shape, 2, reqId);
+									}
+									for(var k = 0; k < numTilesType_2; ++k)
+									{
+										 if(k != id && tile2[k] != undefined)
+										 {
+											tile2[k].shape.image = "";
+										 }
+											stagex.update();
+									}
+								 
+									 x.cursor = "pointer";
+									 x.image = image3;
+									 inCrossStage = 1;
+									 stagex.update();
+								}
+								else
+								{
+									for(var k = 0; k < numChild; ++k)
+									{	
+										
+										xCoord = (tile3[id][k].drawX - 1) / 100;
+										yCoord = (tile3[id][k].drawY - 1) / 100;
+										reqId = xCoord * Math.ceil(( $(window).height() / 100 )) + yCoord;
+										tile1[reqId].shape.image = image[5];
+										stagex.update();
+										myAnimate(tile3[id][k].drawX + 200 , $(window).height(), tile3[id][k].shape, 1, id);
+										tile3[id][k].drawX = tile2[id].drawX;
+										tile3[id][k].drawY =  tile2[id].drawY
+										//tile3[id][k].shape.x =  tile2[id].drawX;
+										//tile3[id][k].shape.y =  tile2[id].drawY;
+										//tile3[id][k].shape.updateCache();					
+										//tile3[id][k].shape.draw(ctxBack);
+										//console.log(tile3[id][k].drawX + '  ' + tile3[id][k].drawY);
+									}
+									
+									for(var  k = 0; k < numTilesType_2; ++k)
+									{
+										if(k != id && tile2[k] != undefined)
+										{
+											var drawYTemp = tile2[k].drawY;
+											//tile2[k].shape.image = "";
+										    tile2[k] = new tileType_2(k,
+																	 stage,
+																	 tile2[k].drawX ,
+																	 -1*tile2[k].height,
+																	  tile2[k].width ,
+																	  tile2[k].height,
+																	  childCount[k], 
+																	  badValue);//-23 is very bad value
+										
+											var shape = tile2[k].shape;
+										
+											myAnimate(tile2[k].drawX, drawYTemp, shape, 0);
+											tile2[k].drawY = drawYTemp;
+											stage.update();
+										}
+									}								
+									x.cursor = "pointer";
+								 	x.image = image2;
+								 	inCrossStage = 0;
+								 	stagex.update();
+								}
+							 });
+							 
+		 this.shape.addEventListener("mouseout",
+							 function () 
+							 {	
+								 createjs.Tween.get(x)
+											  .wait(0)
+											  .to({alpha:1, visible:true}, 10)
+											  .call(handleComplete);
+											function handleComplete() 
+											{
+												x.alpha = 1;
+												if(inCrossStage == 0)
+													x.image = image1;
+												else
+													x.image = image2;
+												stagex.update();
+											}
+									for(var k = 0; k < numTilesType_2; ++k)
+									 {
+										 if(k != id && tile2[k] != undefined && inCrossStage == 0)
+											tile2[k].shape.alpha = 1;
+									 }
+								 stagex.update();
+							 });
+							 
+		this.stage.addChild(this.shape);
+     	this.stage.update();
+	}
+
+	function tileType_1(id, stage_i, drawX, drawY, width, height)
+	{
+		this.id = id;
+		this.drawX = drawX;
+		this.drawY = drawY;
+		this.width = width;
+		this.height = height;
+		this.stage = stage_i;
+		this.image = image[5];
+		var x = new createjs.Bitmap();
+		x.image = this.image;
+		x.x = drawX;
+		x.y = drawY;
+		this.shape = x;
+		var stagex = this.stage;
+		this.shape.draw(ctxBack);
+		x.alpha = 0.6;
+		this.shape.addEventListener("mouseover",
+									 function () 
+									 {
+										 x.alpha = 0.1;
+										 stagex.update();
+									 });
+		 this.shape.addEventListener("mouseout",
+									 function () 
+									 {		
+											createjs.Tween.get(x)
+														  .wait(1)
+														  .to({alpha:0.6, visible:true}, 500)
+														  .call(handleComplete);
+											function handleComplete() 
+											{
+												x.alpha = 0.6;
+												stagex.update();
+											}
+										  stagex.update();
+									 });
+		this.stage.addChild(this.shape);
+     	this.stage.update();
+	}
+	
+	
+	function searchInTile2(i, j, begin, end)
+	{
+		var check = 0;
+		for(var k = begin; k <= end; ++k)
+		{
+			if(i == tile2x[k])
+			{
+				++check;
+				if(j == tile2y[k])
+				{
+					++check;
+					break;
+				}
+				else
+					check = 0;
+			}
+		}
+		if(check == 2)
+			return true;
+		else
+			return false;
+	}
+	
+	var poolx = [];
+	for(var i = 2; i < $(window).width() / 100 - 2 ; ++i)
+	{
+		poolx[i - 2] = i
+	}
+	var pooly = [];
+	for(var i = 2; i < $(window).height() / 100 - 2 ; ++i)
+	{
+		pooly[i - 2] = i 
+	}
+	pooly[i-2] = 2;
+	pooly[i-1] = 3;
+	var getNumberx = function () 
+	{
+		if (poolx.length == 0)
+		{
+			alert('Please Increase Screen Size');
+			throw "Width/Height Underflow";
+		}
+		var index = Math.floor(poolx.length * Math.random());
+		var drawn = poolx.splice(index, 1);
+		return drawn[0];
+	};
+	var getNumbery = function ()
+	{
+		if (poolx.length == 0) 
+		{
+			alert('Please Increase Screen Size');
+			throw "Width/Height Underflow";
+		}
+		var index = Math.floor(pooly.length * Math.random());
+		var drawn = pooly.splice(index, 1);
+		return drawn[0];
+	};
+	
+	for(var i = 0; i < numTilesType_2; ++i)
+	{
+			tile2x[i] = getNumberx();
+			tile2y[i] = getNumbery();
+	}
+	
+	
+	var count = 0;
+	for(var i = 0; i < $(window).width() / 100; ++i)
+	{
+		for(var j = 0; j < $(window).height() / 100; ++j)
+		{		
+				r = j + Math.ceil($(window).height() / 100) * i;
+				if(searchInTile2(i,j, 0, numTilesType_2 - 1))
+				{
+					tile1[r] = new tileType_1(r, stage, 100* i + 1, 100 * j + 1, 100 - 10,100 - 10);
+					for(var k = 0; k < childCount[count] ; ++k)
+					{
+						tile3[count][k] = new tileType_3(count, k, stage,100* i + 1, 100 * j + 1, 100 - 10, 100 - 10);
+						stage.update();
+					}
+					tile2[count] = new tileType_2(count, stage, 100* i + 1, 100 * j + 1, 100 - 10,100 - 10, childCount[count], 100 * j + 1);
+					tile2Copy[count] = tile2[count];
+					count++;
+				}
+				else
+				{
+					tile1[r] = new tileType_1(r, stage, 100* i + 1, 100 * j + 1, 100 - 10,100 - 10);	
+				}
+	 	}
+	}
+	stage.update();
+}
+ 
+
+</script>
+</head>
+
+<body id = "body" onLoad = "init();">
+<canvas id = "backCanvas"></canvas>
+
+</body>
+</html>

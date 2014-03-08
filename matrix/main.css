@@ -1,0 +1,26 @@
+@charset "utf-8";
+/* CSS Document */
+#body
+{
+	background-image:url(back2.png);
+	background-repeat:round;
+	margon:0;
+}
+
+#backCanvas
+{
+	position: absolute;
+    top: 5;
+    left: 5;
+	z-index:2;
+	background-color: transparent;
+}
+
+#mainCanvas 
+{
+    position: absolute;
+    top: 5;
+    left: 5;
+	z-index:10;
+	background-color: transparent;
+}
