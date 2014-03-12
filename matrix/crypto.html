@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Matrix - About</title>
+
+<!-- StyleSheet Begin -->
+<link rel="stylesheet" href="css/main.css">
+<!-- StyleSheet End -->
+<link rel="shortcut icon" href="small-logo.png" type="image/png">
+
+<!-- Scripts Begin -->
+<script src = "scripts/easeljs-0.7.1.min.js"></script>
+<script src = "scripts/jQuery.js"></script>
+<script src = "scripts/tweenjs-0.5.1.min.js"></script>
+<script>
+function init()
+{	
+	var image = [];
+	image[0] = new Image();
+	image[0].src = "assets/home.png";
+	image[1] = new Image();
+	image[1].src = "";
+	image[2] = new Image();
+	image[2].src = "";
+	image[3] = new Image();
+	image[3].src = "";
+	image[4] = new Image();
+	image[4].src = "";
+	image[5] = new Image();
+	image[5].src = "assets/tile1_.png";
+	
+	var matrix = new Image();
+	matrix.src = "assets/name.png";
+		
+	var contentimg = new Image();
+	contentimg.src = "assets/about-page-1.png";
+	
+	$(matrix).load(function()
+	{
+		$(contentimg).load(function()
+		{
+			
+	
+	var backCanvas = document.getElementById("backCanvas");
+	var ctxBack = backCanvas.getContext('2d');
+	backCanvas.width = $(window).width();
+	backCanvas.height = $(window).height();
+	backCanvas.style.marginLeft = "0px";
+	backCanvas.style.marginTop = "0px";
+	
+	
+	var stage = new createjs.Stage("backCanvas");
+	stage.enableMouseOver(30);
+
+	
+	var tile1 = [];
+	
+	
+	
+	var matrixImage = new createjs.Bitmap();
+	matrixImage.image = matrix;
+	matrixImage.y = $(window).height() - matrix.height - $(window).height()/50;
+	matrixImage.x = $(window).width()/100;
+	matrixImage.draw(ctxBack);
+	stage.addChild(matrixImage);
+	stage.update();
+
+	leftX = 200 + 1;
+	rightX = 200 + 1000;
+	upY = 100 + 1;
+	bottomY = 100 + 400;
+	
+	
+	function isInRange(x, y)
+	{
+		if(x >= leftX && x < rightX && y >= upY && y < bottomY)
+			return true;
+		else
+			return false;
+	}
+	
+	
+	function tileType_1(id, stage_i, drawX, drawY, width, height)
+	{
+		this.id = id;
+		this.drawX = drawX;
+		this.drawY = drawY;
+		this.width = width;
+		this.height = height;
+		this.stage = stage_i;
+		if(isInRange(drawX, drawY))
+			this.image = contentimg;
+		else if(drawX == 1 && drawY == 1)
+			this.image = image[0];
+		else
+			this.image = image[5];
+		var x = new createjs.Bitmap();
+		x.image = this.image;
+		x.x = drawX;
+		x.y = drawY;
+		if(isInRange(drawX, drawY))
+			x.sourceRect = new createjs.Rectangle((drawX - 1 - 200) % 1000, (drawY- 1 - 100) % 400, 100, 100);
+		this.shape = x;
+		var stagex = this.stage;
+		this.shape.draw(ctxBack);
+		x.alpha = 0.6;
+		this.shape.addEventListener("mouseover",
+									 function () 
+									 {
+										 if(drawX == 1 && drawY == 1)
+										 {
+											 x.cursor = "pointer";
+										 }
+										 x.alpha = 0.1;
+										 stagex.update();
+									 });
+		this.shape.addEventListener("click",
+									 function () 
+									 {
+										 
+										 if(drawX == 1 && drawY == 1)
+										 {
+											 var myWindow = window.open("main.htm","_self");
+										 }
+									 });
+		 this.shape.addEventListener("mouseout",
+									 function () 
+									 {		
+											createjs.Tween.get(x)
+														  .wait(1)
+														  .to({alpha:0.6, visible:true}, 500)
+														  .call(handleComplete);
+											function handleComplete() 
+											{
+												x.alpha = 0.6;
+												stagex.update();
+											}
+										  stagex.update();
+									 });
+		this.stage.addChild(this.shape);
+     	this.stage.update();
+	}
+		
+
+	for(var i = 0; i < $(window).width() / 100; ++i)
+	{
+		for(var j = 0; j < $(window).height() / 100; ++j)
+		{		
+			r = j + Math.ceil($(window).height() / 100) * i;
+				
+			tile1[r] = new tileType_1(r, stage, 100* i + 1, 100 * j + 1, 100 - 10,100 - 10);
+			tile1[r] = new tileType_1(r, stage, 100* i + 1, 100 * j + 1, 100 - 10,100 - 10);	
+				
+	 	}
+	}
+		});
+	});
+}
+ 
+
+</script>
+<!-- Scripts End -->
+</head>
+
+<body id = "body" onLoad = "init();">
+	<canvas id = "backCanvas"></canvas>
+
+
+</body>
+</html>
