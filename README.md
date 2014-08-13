@@ -1,7 +1,7 @@
 IITG MATRIX Website Repo
 ===========================
 
-Link to website: https://matrixiitg.com
+Link to website: http://matrixiitg.com
 
 Used libraries:
 	1.easeljs
